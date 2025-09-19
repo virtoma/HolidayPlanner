@@ -1,535 +1,103 @@
-<!DOCTYPE html>
-<html lang="nl">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Verlofplanner (BE) — Maand + Schoolvakanties</title>
-  <style>
-    :root{
-      --bg:#0f172a;
-      --card:#111827;
-      --muted:#94a3b8;
-      --text:#e5e7eb;
-      --chip:#1f2937;
-      --border:#1f2937;
-      --focus:#38bdf8;
+<!doctype html>
+<html lang="nl" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Verlofplanner België</title>
+    <meta name="description" content="Plan verlofdagen met Belgische feestdagen en schoolvakanties. Toetsenbordvriendelijk en toegankelijk." />
+    <link rel="preload" href="styles.css" as="style" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Ga naar hoofdinhoud</a>
 
-      --ok:#10b981; --ok2:#059669;
-      --sec:#0284c7; --sec2:#0369a1;
-      --warn:#f59e0b; --warn2:#d97706;
+    <header role="banner" class="site-header">
+      <h1>Verlofplanner België</h1>
+      <button id="themeToggle"
+              class="btn"
+              type="button"
+              aria-pressed="false"
+              aria-label="Schakel kleurmodus">
+        Modus: automatisch
+      </button>
+    </header>
 
-      /* Vakantie-kleuren */
-      --fl-bg: rgba(253, 224, 71, .18);   /* geel Vlaanderen */
-      --wa-bg: rgba(59, 130, 246, .18);   /* blauw Wallonië/FBW */
-      --ov-bg: rgba(34, 197, 94, .20);    /* groen overlap */
-      --fl-bd: rgba(234, 179, 8, .45);
-      --wa-bd: rgba(37, 99, 235, .45);
-      --ov-bd: rgba(34, 197, 94, .55);
-    }
-    html,body{height:100%}
-    body{
-      margin:0; background:linear-gradient(120deg,#0b1220,#0d1b2a 40%,#0b1324);
-      color:var(--text); font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial; line-height:1.4;
-    }
-    .container{max-width:1100px;margin:32px auto;padding:0 16px}
-    .header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}
-    h1{font-size:clamp(22px,3vw,28px);margin:0}
-    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:linear-gradient(180deg,#0b1220,#0b1324);border:1px solid var(--border);color:#94a3b8;font-size:13px}
-    .accent{color:#a7f3d0}
-    .card{
-      background:radial-gradient(1200px 500px at -10% -30%,rgba(56,189,248,.08),transparent 50%),
-                 radial-gradient(1100px 460px at 120% -20%,rgba(34,197,94,.08),transparent 50%),
-                 var(--card);
-      border:1px solid var(--border); border-radius:14px; padding:18px;
-      box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03);
-    }
-    .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
-    @media (max-width:900px){.grid{grid-template-columns:1fr;}}
-    label{display:block;color:#94a3b8;font-size:14px;margin-bottom:6px}
-    input[type=number]{width:140px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:#0b1220;color:var(--text);outline:none}
-    input[type=number]:focus{border-color:var(--focus);box-shadow:0 0 0 3px rgba(56,189,248,.15)}
-    .quota-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-    .btn{appearance:none;border:none;border-radius:10px;padding:10px 14px;cursor:pointer;color:white;background:linear-gradient(180deg,var(--ok),var(--ok2));box-shadow:0 4px 14px rgba(16,185,129,.35);transition:transform .05s ease}
-    .btn:active{transform:translateY(1px)}
-    .btn.secondary{background:linear-gradient(180deg,var(--sec),var(--sec2));box-shadow:0 4px 14px rgba(2,132,199,.35)}
-    .btn.warning{background:linear-gradient(180deg,var(--warn),var(--warn2));box-shadow:0 4px 14px rgba(245,158,11,.35)}
-    .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-    .legend .chip{display:flex;align-items:center;gap:8px;background:var(--chip);border:1px solid var(--border);border-radius:999px;padding:6px 10px;color:#cbd5e1;font-size:12px}
-    .legend .dot{width:10px;height:10px;border-radius:50%}
-    .dot.full{background:#22c55e}.dot.half{background:#0ea5e9}.dot.holiday{background:#ef4444}.dot.wd{background:#64748b}
-    .dot.vla{background:#facc15}.dot.waal{background:#60a5fa}.dot.over{background:#34d399}
-    .legend-note{font-size:12px;color:#cbd5e1;margin-top:6px}
+    <main id="main" role="main">
+      <section aria-labelledby="rangeTitle" class="panel">
+        <h2 id="rangeTitle">Bereik en instelling</h2>
 
-    /* Maandweergave */
-    .month { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 14px; }
-    .month h3 { margin: 6px 0 8px; font-size: 18px; color: #e5e7eb; font-weight: 600; text-transform: capitalize; }
-    .month .dow-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 6px; }
-    .month .dow { font-size: 12px; color: #94a3b8; text-align: center; }
-    .month .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-    .month .placeholder { visibility: hidden; }
-
-    /* Dagcellen */
-    .day{position:relative;background:var(--chip);border:1px solid var(--border);border-radius:10px;min-height:80px;padding:8px;cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:border-color .2s ease}
-    .day:hover{border-color:var(--focus)}
-    .day.disabled{opacity:.35;cursor:not-allowed;filter:grayscale(.2)}
-    .day .date{font-weight:600;font-size:14px;color:#d1d5db}
-    .day .tag{margin-top:auto;font-size:12px;border-radius:6px;padding:4px 6px;display:inline-block}
-    .full{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);color:#86efac}
-    .half{background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.35);color:#93c5fd}
-    .holiday{outline:1px dashed rgba(239,68,68,.1); outline-offset:-4px}
-   /* .holiday-weekday{outline:1px dashed rgba(239,68,68,.1); outline-offset:-4px}*/
-
-    /* Schoolvakantie-highlights */
-    .day.fl { background: linear-gradient(0deg, var(--fl-bg), var(--fl-bg)), var(--chip); border-color: var(--fl-bd); }
-    .day.wa { background: linear-gradient(0deg, var(--wa-bg), var(--wa-bg)), var(--chip); border-color: var(--wa-bd); }
-    .day.ov { background: linear-gradient(0deg, var(--ov-bg), var(--ov-bg)), var(--chip); border-color: var(--ov-bd); }
-
-    .aside .section{margin-bottom:18px}
-    .listbox{ background:#0a0f1a;border:1px solid var(--border);border-radius:12px;padding:10px; }
-    textarea{width:100%;min-height:220px;background:transparent;border:none;resize:vertical;color:#e5e7eb;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.5;outline:none}
-    .stats{display:flex;gap:10px;flex-wrap:wrap}
-    .stat{background:var(--chip);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:13px;color:#d1d5db}
-    .controls{display:flex;gap:8px;flex-wrap:wrap}
-    .kbd{font-family:ui-monospace,monospace;background:#0b1220;border:1px solid var(--border);border-radius:6px;padding:2px 6px;font-size:12px;color:#cbd5e1}
-    .notice{font-size:12px;color:#cbd5e1}
-    /* Beach image voor werkdag-feestdagen */
-.day.beach {
-  background-image:
-    /*linear-gradient(0deg, rgba(0,0,0,.1), rgba(0,0,0,.28)),*/
-    url("beach.png");
-  background-size: cover, cover;
-  background-position: center, center;
-  background-repeat: no-repeat, no-repeat;
-  color: #f8fafc; /* betere contrastkleur voor tekst */
-  border-color: rgba(255,255,255,.35);
-}
-.day.beach .date { color: #fff }
-
-    
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>Virginie verlofplanner België</h1>
-      <div class="pill">Bereik: vandaag → einde jaar • ma–vr • excl. Belgische feestdagen</div>
-    </div>
-
-    <div class="card grid">
-      <section>
-        <div class="quota-row">
-          <div>
-            <label for="quota">Resterend quotum (aantal dagen)</label>
-            <input id="quota" type="number" min="0" step="0.5" value="18.5" placeholder="vb. 18.5">
-          </div>
-          <button id="setQuota" class="btn">Quotum instellen</button>
-          <div class="pill">Vandaag: <span id="todayLabel" class="accent"></span></div>
-          <div class="pill">Einde jaar: <span id="endLabel" class="accent"></span></div>
-        </div>
-
-        <div class="legend">
-          <div class="chip"><span class="dot wd"></span> Werkdag</div>
-          <div class="chip"><span class="dot holiday"></span> Feestdag</div>
-          <div class="chip"><span class="dot full"></span> Volledige dag</div>
-          <div class="chip"><span class="dot half"></span> Halve dag</div>
-        </div>
-        <div class="legend">
-          <div class="chip"><span class="dot vla"></span> Vlaamse schoolvakantie</div>
-          <div class="chip"><span class="dot waal"></span> Waalse/FBW schoolvakantie</div>
-          <div class="chip"><span class="dot over"></span> Overlap (beide)</div>
-          <div class="chip"><span class="kbd">Klik</span> toggle dag • <span class="kbd">Shift+Klik</span> halve dag</div>
-        </div>
-        <div class="legend-note">
-          Schoolvakanties 2025 volgens gepubliceerde kalenders; lokale afwijkingen mogelijk. [Expatica 2024–2025] [web:50]
-        </div>
-
-        <div id="calendar" aria-live="polite"></div>
+        <form id="settingsForm">
+          <fieldset>
+            <legend>Bereik</legend>
+            <div class="field">
+              <label for="startDate">Startdatum</label>
+              <input id="startDate" name="startDate" type="date" required />
+            </div>
+            <div class="field">
+              <label for="endDate">Einddatum</label>
+              <input id="endDate" name="endDate" type="date" required />
+            </div>
+            <div class="field">
+              <label for="quota">Quotum (dagen)</label>
+              <input id="quota" name="quota" type="number" inputmode="numeric" min="0" step="0.5" aria-describedby="quotaHelp" />
+              <div id="quotaHelp" class="help">Gebruik 0.5 voor halve dagen.</div>
+            </div>
+            <div class="field checkbox">
+              <input id="weekdaysOnly" name="weekdaysOnly" type="checkbox" checked />
+              <label for="weekdaysOnly">Alleen ma–vr</label>
+            </div>
+            <div class="field checkbox">
+              <input id="excludeHolidays" name="excludeHolidays" type="checkbox" checked />
+              <label for="excludeHolidays">Belgische feestdagen uitsluiten</label>
+            </div>
+            <button type="submit" class="btn primary">Toepassen</button>
+          </fieldset>
+        </form>
       </section>
 
-      <aside class="aside">
-        <div class="section">
-          <div class="stats">
-            <div class="stat">Geselecteerd: <span id="selCount">0</span></div>
-            <div class="stat">Totaal in dagen: <span id="selTotal">0</span></div>
-            <div class="stat">Quotum over: <span id="quotaLeft">-</span></div>
+      <section aria-labelledby="overviewTitle" class="panel">
+        <h2 id="overviewTitle">Overzicht</h2>
+        <div class="stats" role="region" aria-live="polite" aria-atomic="true">
+          <div class="stat">
+            <span class="stat__label">Resterend quotum</span>
+            <output id="remainingDays" aria-live="polite">0</output>
+          </div>
+          <div class="stat">
+            <span class="stat__label">Vandaag</span>
+            <time id="today"></time>
+          </div>
+          <div class="stat">
+            <span class="stat__label">Einde jaar</span>
+            <time id="endOfYear"></time>
           </div>
         </div>
+      </section>
 
-        <div class="section controls">
-          <button id="copyBtn" class="btn secondary">Kopieer lijst</button>
-          <button id="clearBtn" class="btn warning">Alles wissen</button>
-        </div>
+      <section aria-labelledby="legendTitle" class="panel">
+        <h2 id="legendTitle">Legenda</h2>
+        <ul class="legend" role="list">
+          <li><span class="badge workday" aria-hidden="true"></span> Werkdag</li>
+          <li><span class="badge holiday" aria-hidden="true"></span> Feestdag</li>
+          <li><span class="badge full" aria-hidden="true"></span> Volledige dag</li>
+          <li><span class="badge half" aria-hidden="true"></span> Halve dag</li>
+          <li><span class="badge vla" aria-hidden="true"></span> Vlaamse schoolvakantie</li>
+          <li><span class="badge wal" aria-hidden="true"></span> Waalse/FBW schoolvakantie</li>
+          <li><span class="badge both" aria-hidden="true"></span> Overlap (beide)</li>
+        </ul>
+        <p class="hint">Klik om te wisselen; Shift+Klik voor halve dag.</p>
+      </section>
 
-        <div class="section">
-          <label>Te kopiëren lijst</label>
-          <div class="listbox">
-            <textarea id="output" spellcheck="false" placeholder="De lijst verschijnt hier…"></textarea>
-          </div>
-          <div class="notice">ISO-datum, weekdag (nl), full/half — klaar voor e-mail of chat.</div>
-        </div>
-      </aside>
-    </div>
-  </div><iframe src="https://www.juicer.io/api/feeds/proximusgroup/iframe" frameborder="0" width="1000" height="1000" style="display:block;margin:0 auto;"></iframe>
+      <section aria-labelledby="calendarTitle" class="panel">
+        <h2 id="calendarTitle">Kalender</h2>
+        <div id="calendar" class="calendar" role="grid" aria-readonly="true" aria-describedby="calendarHint"></div>
+        <p id="calendarHint" class="sr-only">Gebruik pijltoetsen om te navigeren, Enter om te wisselen, Shift+Enter voor halve dag.</p>
+      </section>
+    </main>
 
-  <script>
-    // Belgische feestdagen 2024/2025 (nationaal) [timeanddate / officeholidays / businessbelgium] [web:50]
-const HOLIDAYS_BY_YEAR = {
-  2024: [
-    "2024-01-01", // Nieuwjaar
-    "2024-04-01", // Paasmaandag
-    "2024-05-01", // Dag van de Arbeid
-    "2024-05-09", // O.H. Hemelvaart
-    "2024-05-20", // Pinkstermaandag
-    "2024-07-21", // Nationale Feestdag
-    "2024-08-15", // O.L.V. Hemelvaart
-    "2024-11-01", // Allerheiligen
-    "2024-11-11", // Wapenstilstand
-    "2024-12-25", // Kerstmis
-    "2024-12-26"  // Tweede kerstdag (optioneel/banken)
-  ],
-  2025: [
-    "2025-01-01", // Nieuwjaar
-    "2025-04-21", // Paasmaandag
-    "2025-05-01", // Dag van de Arbeid
-    "2025-05-29", // O.H. Hemelvaart
-    "2025-06-09", // Pinkstermaandag
-    "2025-07-21", // Nationale Feestdag
-    "2025-08-15", // O.L.V. Hemelvaart
-    "2025-11-11", // Wapenstilstand
-    "2025-12-25", // Kerstmis
-    "2025-12-26"  // Tweede kerstdag (optioneel/banken)
-  ],
-  2026: [
-    "2026-01-01", // Nieuwjaar
-    "2026-04-06", // Paasmaandag
-    "2026-05-01", // Dag van de Arbeid
-    "2026-05-14", // O.H. Hemelvaart
-    "2026-05-25", // Pinkstermaandag
-    "2026-07-21", // Nationale Feestdag
-    "2026-08-15", // O.L.V. Hemelvaart
-    "2026-11-01", // Allerheiligen
-    "2026-11-11", // Wapenstilstand
-    "2026-12-25", // Kerstmis
-    "2026-12-26"  // Tweede kerstdag (optioneel/banken)
-  ], // 2026 data bevestigd via NBB/timeanddate/kalenderbronnen [web:14][web:82][web:84]
-  2027: [
-    "2027-01-01", // Nieuwjaar
-    "2027-03-29", // Paasmaandag (Pasen 28/03/2027)
-    "2027-05-01", // Dag van de Arbeid
-    "2027-05-06", // O.H. Hemelvaart
-    "2027-05-17", // Pinkstermaandag
-    "2027-07-21", // Nationale Feestdag
-    "2027-08-15", // O.L.V. Hemelvaart
-    "2027-11-01", // Allerheiligen
-    "2027-11-11", // Wapenstilstand
-    "2027-12-25", // Kerstmis
-    "2027-12-26"  // Tweede kerstdag (optioneel/banken)
-  ] // 2027 is berekend op basis van paaskalender; verifieer intern indien nodig [web:82]
-};
+    <footer role="contentinfo" class="site-footer">
+      <p>Schoolvakanties 2025 volgen gepubliceerde kalenders; lokale afwijkingen mogelijk.</p>
+    </footer>
 
-
-    // Schoolvakanties 2025 (Vlaanderen en FWB) [Expatica 2024–2025] [web:50]
-// Schoolvakanties 2024–2027 (Vlaanderen & FWB)
-const SCHOOL_HOLIDAYS = {
-  2024: {
-    flanders: [
-      ["2024-10-28","2024-11-03"], // Herfst
-      ["2024-12-23","2025-01-05"]  // Kerst (loopt door in 2025)
-    ],
-    wallonia: [
-      ["2024-10-21","2024-11-03"], // Toussaint (2 weken)
-      ["2024-12-23","2025-01-05"]  // Noël
-    ]
-  }, // 2024 volgens 2024–2025 kalenders [web:85][web:86][web:50]
-
-  2025: {
-    flanders: [
-      ["2025-03-03","2025-03-09"], // Krokus
-      ["2025-04-07","2025-04-21"], // Pasen
-      ["2025-07-01","2025-08-31"], // Zomer
-      ["2025-10-27","2025-11-02"], // Herfst
-      ["2025-12-22","2026-01-04"]  // Kerst
-    ],
-    wallonia: [
-      ["2025-02-24","2025-03-09"], // Carnaval
-      ["2025-04-28","2025-05-11"], // Printemps
-      ["2025-07-05","2025-08-24"], // Été
-      ["2025-10-20","2025-11-02"], // Toussaint (volgens FWB-lijsten is 2 weken gebruikelijk)
-      ["2025-12-22","2026-01-04"]  // Noël
-    ]
-  }, // 2025 conform eerdere specificatie en FWB-bron [web:50][web:22]
-
-  2026: {
-    flanders: [
-      ["2026-02-16","2026-02-22"], // Krokus (indicatief, volg publicatie)
-      ["2026-04-06","2026-04-19"], // Pasen (indicatief)
-      ["2026-07-01","2026-08-31"], // Zomer
-      ["2026-11-02","2026-11-08"], // Herfst (volgens Vlaamse schema-overzicht)
-      ["2025-12-22","2026-01-04"]  // Kerst die doorloopt in 2026 (van schooljaar 2025-26)
-    ],
-    wallonia: [
-      ["2026-02-23","2026-03-08"], // Carnaval (typisch 2 weken in FWB)
-      ["2026-04-20","2026-05-03"], // Printemps (indicatief volgens FWB ritme na Pasen)
-      ["2026-07-04","2026-08-23"], // Été (indicatief, FWB heeft kortere zomervakantie)
-      ["2026-10-26","2026-11-08"], // Toussaint (2 weken)
-      ["2025-12-22","2026-01-04"]  // Noël (doorlopend)
-    ]
-  }, // Controleer jaarlijkse officiële publicaties; structuur blijft gelijk. [web:48][web:59]
-
-  2027: {
-    flanders: [
-      ["2027-03-01","2027-03-07"], // Krokus (indicatief, eerste week maart)
-      ["2027-03-29","2027-04-11"], // Pasen (Paasmaandag 2027-03-29, indicatief 2 weken rond Pasen)
-      ["2027-07-01","2027-08-31"], // Zomer
-      ["2027-11-01","2027-11-07"], // Herfst (indicatief)
-      ["2026-12-21","2027-01-03"]  // Kerst (doorlopend vanuit schooljaar 26-27)
-    ],
-    wallonia: [
-      ["2027-02-22","2027-03-07"], // Carnaval (indicatief 2 weken)
-      ["2027-04-19","2027-05-02"], // Printemps (na Pasen, indicatief)
-      ["2027-07-03","2027-08-22"], // Été (indicatief)
-      ["2027-10-25","2027-11-07"], // Toussaint (2 weken)
-      ["2026-12-21","2027-01-03"]  // Noël (doorlopend)
-    ]
-  } // 2027 is op basis van bekend ritme en paasdatums; bevestig bij publicatie. [web:48]
-};
-
-
-    const today = new Date();
-    const thisYear = today.getFullYear();
-    const endOfYear = new Date(thisYear, 11, 31);
-
-    // UI refs
-    const todayLabel = document.getElementById('todayLabel');
-    const endLabel = document.getElementById('endLabel');
-    const calendarEl = document.getElementById('calendar');
-    const selCountEl = document.getElementById('selCount');
-    const selTotalEl = document.getElementById('selTotal');
-    const quotaLeftEl = document.getElementById('quotaLeft');
-    const outputEl = document.getElementById('output');
-    const setQuotaBtn = document.getElementById('setQuota');
-    const copyBtn = document.getElementById('copyBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const quotaInput = document.getElementById('quota');
-
-    // State
-    let quota = null;        // 0.5-stappen
-    let selections = {};     // { 'YYYY-MM-DD': 'full' | 'half' }
-
-    // Helpers
-    function toISO(d){
-      const y=d.getFullYear();
-      const m=String(d.getMonth()+1).padStart(2,'0');
-      const day=String(d.getDate()).padStart(2,'0');
-      return `${y}-${m}-${day}`;
-    }
-    function parseISO(iso){ const [y,m,d]=iso.split('-').map(Number); return new Date(y, m-1, d); }
-    function formatHuman(d){
-      return d.toLocaleDateString('nl-BE', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
-    }
-    function isWeekday(d){ const wd=d.getDay(); return wd>=1 && wd<=5; } // ma..vr
-    function startDate(){ return new Date(today.getFullYear(), today.getMonth(), today.getDate()); }
-    function yearHolidays(year){ return new Set((HOLIDAYS_BY_YEAR[year]||[])); }
-    function isHolidayISO(iso){
-  const y = Number(iso.slice(0,4));
-  const set = new Set(HOLIDAYS_BY_YEAR[y] || []);
-  return set.has(iso);
-}
-
-    // Schoolvakantie helpers
-    function isoInRange(iso, startIso, endIso){ return iso >= startIso && iso <= endIso; }
-   function isFlandersSchoolHoliday(iso){
-  const y = Number(iso.slice(0,4));
-  const ranges = (SCHOOL_HOLIDAYS[y] && SCHOOL_HOLIDAYS[y].flanders) || [];
-  return ranges.some(([s,e]) => iso >= s && iso <= e);
-}
-
-function isWalloniaSchoolHoliday(iso){
-  const y = Number(iso.slice(0,4));
-  const ranges = (SCHOOL_HOLIDAYS[y] && SCHOOL_HOLIDAYS[y].wallonia) || [];
-  return ranges.some(([s,e]) => iso >= s && iso <= e);
-}
-
-    // Maandweergave
-    function renderCalendar(){
-      todayLabel.textContent = formatHuman(today);
-      endLabel.textContent = formatHuman(endOfYear);
-      calendarEl.innerHTML = '';
-
-      let cursor = new Date(thisYear, today.getMonth(), 1);
-      while (cursor <= endOfYear) {
-        const monthStart = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
-        const monthEnd = new Date(cursor.getFullYear(), cursor.getMonth()+1, 0);
-
-        const monthEl = document.createElement('section');
-        monthEl.className = 'month';
-
-        const title = document.createElement('h3');
-        title.textContent = monthStart.toLocaleDateString('nl-BE', { month:'long', year:'numeric' });
-        monthEl.appendChild(title);
-
-        const dowsRow = document.createElement('div');
-        dowsRow.className = 'dow-row';
-        ['Ma','Di','Wo','Do','Vr','Za','Zo'].forEach(dw=>{
-          const el = document.createElement('div');
-          el.className = 'dow';
-          el.textContent = dw;
-          dowsRow.appendChild(el);
-        });
-        monthEl.appendChild(dowsRow);
-
-        const grid = document.createElement('div');
-        grid.className = 'grid';
-
-        // Offset (Ma=0)
-        const monthStartWeekday = (monthStart.getDay()+6)%7;
-        for (let i=0;i<monthStartWeekday;i++){
-          const ph = document.createElement('div');
-          ph.className = 'day disabled placeholder';
-          grid.appendChild(ph);
-        }
-
-        for (let day=1; day<=monthEnd.getDate(); day++){
-          const d = new Date(cursor.getFullYear(), cursor.getMonth(), day);
-          const iso = toISO(d);
-          const el = document.createElement('div');
-          el.className = 'day';
-          el.dataset.iso = iso;
-
-          // Schoolvakantie-highlights
-          const fl = isFlandersSchoolHoliday(iso);
-          const wa = isWalloniaSchoolHoliday(iso);
-          if (fl && wa) el.classList.add('ov');
-          else if (fl) el.classList.add('fl');
-          else if (wa) el.classList.add('wa');
-
-          const afterToday = d >= startDate();
-          const weekday = isWeekday(d);
-          const holiday = isHolidayISO(iso);
-          const selectable = afterToday && (d<=endOfYear) && weekday && !holiday;
-
-          if (!selectable){ el.classList.add('disabled'); }
-if (holiday){ 
-  el.classList.add('holiday'); 
-  if (weekday) el.classList.add('beach','holiday-weekday'); // image op werkdag-feestdag
-}
-
-          const dateEl = document.createElement('div');
-          dateEl.className = 'date';
-          dateEl.textContent = day;
-          el.appendChild(dateEl);
-
-          const tag = document.createElement('div');
-          tag.className='tag';
-          el.appendChild(tag);
-
-          applyTag(el);
-
-          el.addEventListener('click',(ev)=>{
-            if (!selectable) return;
-            const withShift = ev.shiftKey;
-            const current = selections[iso];
-            if (withShift){
-              if (current==='half'){ delete selections[iso]; } else { selections[iso]='half'; }
-            } else {
-              if (current==='full'){ delete selections[iso]; } else { selections[iso]='full'; }
-            }
-            applyTag(el);
-            syncOutput();
-          });
-
-          grid.appendChild(el);
-        }
-
-        monthEl.appendChild(grid);
-        calendarEl.appendChild(monthEl);
-
-        cursor = new Date(cursor.getFullYear(), cursor.getMonth()+1, 1);
-      }
-    }
-
-    function applyTag(el){
-      const iso = el.dataset.iso;
-      const tag = el.querySelector('.tag');
-      if (!tag) return;
-      tag.className='tag';
-      if (selections[iso]==='full'){
-        tag.classList.add('full');
-        tag.textContent='Volledig';
-      } else if (selections[iso]==='half'){
-        tag.classList.add('half');
-        tag.textContent='Half';
-      } else {
-        tag.textContent='';
-      }
-    }
-
-    function computeTotals(){
-      const days = Object.values(selections);
-      const total = days.reduce((acc,t)=> acc + (t==='full'?1:0.5), 0);
-      const count = days.length;
-      return {count,total};
-    }
-
-    function syncOutput(){
-      const entries = Object.keys(selections).sort().map(iso=>{
-        const d = parseISO(iso);
-        const wd = d.toLocaleDateString('nl-BE',{weekday:'short'});
-        const label = selections[iso]==='full'?'full':'half';
-        return `${iso} (${wd}) - ${label}`;
-      });
-
-      const {count,total} = computeTotals();
-      selCountEl.textContent = String(count);
-      selTotalEl.textContent = String(total);
-
-      if (quota===null || Number.isNaN(quota)){
-        quotaLeftEl.textContent = '—';
-      } else {
-        const left = quota - total;
-        quotaLeftEl.textContent = String(Math.max(0, left).toFixed(1).replace(/\.0$/,''));
-        quotaLeftEl.style.color = (left < -0.0001) ? '#fca5a5' : '';
-      }
-
-      const header = `Verlofaanvraag\nPeriode: ${formatHuman(startDate())} t/m ${formatHuman(endOfYear)}\nTotaal: ${total} dag(en)\n`;
-      const list = entries.length ? entries.join('\n') : '(geen dagen geselecteerd)';
-      outputEl.value = `${header}\n${list}`;
-    }
-
-    // Acties
-    setQuotaBtn.addEventListener('click', ()=>{
-      const val = parseFloat(quotaInput.value);
-      if (Number.isFinite(val) && val>=0){
-        quota = Math.round(val*2)/2;
-        quotaInput.value = String(quota);
-      } else {
-        quota = null;
-      }
-      syncOutput();
-    });
-
-    copyBtn.addEventListener('click', async ()=>{
-      outputEl.select();
-      try{
-        await navigator.clipboard.writeText(outputEl.value);
-        copyBtn.textContent = 'Gekopieerd!';
-        setTimeout(()=>copyBtn.textContent='Kopieer lijst',1200);
-      }catch(e){
-        document.execCommand('copy');
-      }
-    });
-
-    clearBtn.addEventListener('click', ()=>{
-      selections = {};
-      renderCalendar();
-      syncOutput();
-    });
-
-    // Init
-    renderCalendar();
-    syncOutput();
-  </script>
-</body>
+    <script src="app.js" defer></script>
+  </body>
 </html>
-
-
