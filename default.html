@@ -3,101 +3,92 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Verlofplanner België</title>
-    <meta name="description" content="Plan verlofdagen met Belgische feestdagen en schoolvakanties. Toetsenbordvriendelijk en toegankelijk." />
-    <link rel="preload" href="styles.css" as="style" />
+    <title>Virginie verlofplanner België</title>
+    <meta name="description" content="Verlofplanner met werkdagen, feestdagen en schoolvakanties in België. Toegankelijk en mobielvriendelijk met licht/donkermodus." />
+    <meta name="theme-color" content="#ffffff" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <a class="skip-link" href="#main">Ga naar hoofdinhoud</a>
 
-    <header role="banner" class="site-header">
-      <h1>Verlofplanner België</h1>
-      <button id="themeToggle"
-              class="btn"
-              type="button"
-              aria-pressed="false"
-              aria-label="Schakel kleurmodus">
-        Modus: automatisch
+    <header class="site-header" role="banner">
+      <h1>Virginie verlofplanner België</h1>
+      <button id="theme-toggle" class="button" type="button" aria-pressed="false" aria-label="Schakel kleurmodus">
+        Licht/donker
       </button>
     </header>
 
-    <main id="main" role="main">
-      <section aria-labelledby="rangeTitle" class="panel">
-        <h2 id="rangeTitle">Bereik en instelling</h2>
+    <main id="main" class="site-main" role="main">
+      <section aria-labelledby="range-title" class="controls">
+        <h2 id="range-title">Bereik en quotum</h2>
 
-        <form id="settingsForm">
+        <form id="planner-form">
           <fieldset>
-            <legend>Bereik</legend>
+            <legend class="visually-hidden">Instellingen</legend>
+
             <div class="field">
-              <label for="startDate">Startdatum</label>
-              <input id="startDate" name="startDate" type="date" required />
+              <label for="start-date">Vandaag:</label>
+              <input id="start-date" name="start-date" type="date" required />
             </div>
+
             <div class="field">
-              <label for="endDate">Einddatum</label>
-              <input id="endDate" name="endDate" type="date" required />
+              <label for="end-date">Einde jaar:</label>
+              <input id="end-date" name="end-date" type="date" required />
             </div>
+
             <div class="field">
-              <label for="quota">Quotum (dagen)</label>
-              <input id="quota" name="quota" type="number" inputmode="numeric" min="0" step="0.5" aria-describedby="quotaHelp" />
-              <div id="quotaHelp" class="help">Gebruik 0.5 voor halve dagen.</div>
+              <label for="quota">Resterend quotum (dagen):</label>
+              <input id="quota" name="quota" type="number" min="0" step="0.5" inputmode="decimal" />
             </div>
-            <div class="field checkbox">
-              <input id="weekdaysOnly" name="weekdaysOnly" type="checkbox" checked />
-              <label for="weekdaysOnly">Alleen ma–vr</label>
+
+            <div class="actions">
+              <button id="apply" type="submit" class="button">Quotum instellen</button>
+              <button id="reset" type="button" class="button button--secondary">Herstel selectie</button>
             </div>
-            <div class="field checkbox">
-              <input id="excludeHolidays" name="excludeHolidays" type="checkbox" checked />
-              <label for="excludeHolidays">Belgische feestdagen uitsluiten</label>
-            </div>
-            <button type="submit" class="btn primary">Toepassen</button>
           </fieldset>
         </form>
       </section>
 
-      <section aria-labelledby="overviewTitle" class="panel">
-        <h2 id="overviewTitle">Overzicht</h2>
-        <div class="stats" role="region" aria-live="polite" aria-atomic="true">
-          <div class="stat">
-            <span class="stat__label">Resterend quotum</span>
-            <output id="remainingDays" aria-live="polite">0</output>
-          </div>
-          <div class="stat">
-            <span class="stat__label">Vandaag</span>
-            <time id="today"></time>
-          </div>
-          <div class="stat">
-            <span class="stat__label">Einde jaar</span>
-            <time id="endOfYear"></time>
-          </div>
-        </div>
-      </section>
-
-      <section aria-labelledby="legendTitle" class="panel">
-        <h2 id="legendTitle">Legenda</h2>
-        <ul class="legend" role="list">
-          <li><span class="badge workday" aria-hidden="true"></span> Werkdag</li>
-          <li><span class="badge holiday" aria-hidden="true"></span> Feestdag</li>
-          <li><span class="badge full" aria-hidden="true"></span> Volledige dag</li>
-          <li><span class="badge half" aria-hidden="true"></span> Halve dag</li>
-          <li><span class="badge vla" aria-hidden="true"></span> Vlaamse schoolvakantie</li>
-          <li><span class="badge wal" aria-hidden="true"></span> Waalse/FBW schoolvakantie</li>
-          <li><span class="badge both" aria-hidden="true"></span> Overlap (beide)</li>
+      <section aria-labelledby="legend-title" class="legend">
+        <h2 id="legend-title">Legenda</h2>
+        <ul class="legend-list" role="list">
+          <li><span class="dot dot--workday" aria-hidden="true"></span> Werkdag</li>
+          <li><span class="dot dot--holiday" aria-hidden="true"></span> Feestdag</li>
+          <li><span class="dot dot--full" aria-hidden="true"></span> Volledige dag</li>
+          <li><span class="dot dot--half" aria-hidden="true"></span> Halve dag</li>
+          <li><span class="dot dot--fl" aria-hidden="true"></span> Vlaamse schoolvakantie</li>
+          <li><span class="dot dot--wa" aria-hidden="true"></span> Waalse/FBW schoolvakantie</li>
+          <li><span class="dot dot--overlap" aria-hidden="true"></span> Overlap (beide)</li>
         </ul>
-        <p class="hint">Klik om te wisselen; Shift+Klik voor halve dag.</p>
       </section>
 
-      <section aria-labelledby="calendarTitle" class="panel">
-        <h2 id="calendarTitle">Kalender</h2>
-        <div id="calendar" class="calendar" role="grid" aria-readonly="true" aria-describedby="calendarHint"></div>
-        <p id="calendarHint" class="sr-only">Gebruik pijltoetsen om te navigeren, Enter om te wisselen, Shift+Enter voor halve dag.</p>
+      <section aria-labelledby="grid-title" class="calendar-section">
+        <div class="calendar-header">
+          <h2 id="grid-title">Kalender</h2>
+          <p class="hint">Klik om een dag te toggelen en gebruik Shift+Klik voor een halve dag; pijltjestoetsen navigeren in het raster.</p>
+        </div>
+
+        <div
+          id="calendar"
+          class="calendar"
+          role="grid"
+          aria-labelledby="grid-title"
+          aria-describedby="grid-help"
+        >
+          <!-- Dagen worden dynamisch ingevuld door script.js -->
+        </div>
+        <p id="grid-help" class="visually-hidden">
+          Gebruik pijltjestoetsen om te verplaatsen, Enter of Spatie om een dag te selecteren, Shift+Enter voor halve dag.
+        </p>
+
+        <div class="summary" aria-live="polite" aria-atomic="true"></div>
       </section>
     </main>
 
-    <footer role="contentinfo" class="site-footer">
-      <p>Schoolvakanties 2025 volgen gepubliceerde kalenders; lokale afwijkingen mogelijk.</p>
+    <footer class="site-footer" role="contentinfo">
+      <p>Schoolvakanties 2025 volgens gepubliceerde kalenders; lokale afwijkingen mogelijk.</p>
     </footer>
 
-    <script src="app.js" defer></script>
+    <script src="script.js" defer></script>
   </body>
 </html>
