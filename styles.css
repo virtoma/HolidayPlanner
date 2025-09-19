@@ -1,0 +1,148 @@
+:root {
+  --bg: #ffffff;
+  --text: #1b1f24;
+  --muted: #5a6677;
+  --border: #d0d7de;
+  --primary: #0a7cff;
+  --accent: #0aa370;
+  --danger: #c62828;
+  --warning: #b26a00;
+
+  --workday: #e6f0ff;
+  --holiday: #ffe6e6;
+  --full: #cfe9ff;
+  --half: #ffe8b3;
+  --vla: #e3f7ec;
+  --wal: #f3e7ff;
+  --both: #cfeadf;
+
+  --focus: 3px solid #0a7cff;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0c1116;
+    --text: #e6edf3;
+    --muted: #9da7b1;
+    --border: #2d3741;
+    --primary: #6aa9ff;
+    --accent: #5bd0a3;
+
+    --workday: #102033;
+    --holiday: #331a1a;
+    --full: #183a66;
+    --half: #664a18;
+    --vla: #103824;
+    --wal: #2a1740;
+    --both: #1a3a2d;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+.skip-link:focus {
+  left: 8px;
+  top: 8px;
+  background: var(--primary);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  outline: none;
+}
+
+.site-header, .site-footer {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.site-footer { border-top: 1px solid var(--border); border-bottom: 0; }
+
+main { padding: 16px; max-width: 980px; margin: 0 auto; }
+
+.panel { margin-block: 16px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; }
+
+.field { margin-block: 12px; }
+.field.checkbox { display: flex; align-items: center; gap: 8px; }
+
+input[type="date"], input[type="number"], .btn, select {
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+}
+input:focus, select:focus, .btn:focus { outline: var(--focus); outline-offset: 2px; }
+
+.btn { cursor: pointer; }
+.btn.primary { background: var(--primary); color: #fff; border-color: transparent; }
+.btn[aria-pressed="true"] { background: var(--accent); color: #0b1f17; }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.stat { padding: 12px; border: 1px solid var(--border); border-radius: 10px; }
+.stat__label { display: block; color: var(--muted); font-size: 0.95rem; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 12px; padding-left: 1rem; }
+.legend .badge {
+  display: inline-block; width: 14px; height: 14px; border-radius: 4px; margin-right: 6px; vertical-align: -2px;
+}
+.badge.workday { background: var(--workday); }
+.badge.holiday { background: var(--holiday); }
+.badge.full { background: var(--full); }
+.badge.half { background: var(--half); }
+.badge.vla { background: var(--vla); }
+.badge.wal { background: var(--wal); }
+.badge.both { background: var(--both); }
+
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(42px, 1fr));
+  gap: 6px;
+}
+.day {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-height: 56px;
+  padding: 6px;
+  background: var(--workday);
+  position: relative;
+}
+.day[aria-current="date"] { outline: var(--focus); outline-offset: 2px; }
+.day.holiday { background: var(--holiday); }
+.day.full { background: var(--full); }
+.day.half { background: var(--half); }
+.day .date {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.day .labels {
+  position: absolute; inset: auto 6px 6px 6px; display: flex; gap: 4px; flex-wrap: wrap;
+}
+.kbd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  background: color-mix(in oklab, var(--text) 10%, transparent);
+  padding: 1px 6px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.9em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation-duration: 0.001s !important; }
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
